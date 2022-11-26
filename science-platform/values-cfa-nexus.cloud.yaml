@@ -1,0 +1,64 @@
+environment: cfa-nexus.cloud
+fqdn: cfa-nexus.cloud
+vault_path_prefix: secret/k8s_operator/cfa-nexus.cloud
+
+alert_stream_broker:
+  enabled: false
+cachemachine:
+  enabled: false
+cert_manager:
+  enabled: true
+datalinker:
+  enabled: false
+exposurelog:
+  enabled: false
+gafaelfawr:
+  enabled: true
+hips:
+  enabled: false
+ingress_nginx:
+  enabled: true
+mobu:
+  enabled: false
+moneypenny:
+  enabled: true
+narrativelog:
+  enabled: false
+noteburst:
+  enabled: false
+nublado2:
+  enabled: true
+plot_navigator:
+  enabled: false
+portal:
+  enabled: true
+postgres:
+  enabled: true
+sasquatch:
+  enabled: false
+production_tools:
+  enabled: false
+semaphore:
+  enabled: false
+squareone:
+  enabled: true
+squash_api:
+  enabled: false
+strimzi:
+  enabled: false
+strimzi_registry_operator:
+  enabled: false
+tap:
+  enabled: false
+tap_schema:
+  enabled: false
+telegraf:
+  enabled: false
+telegraf-ds:
+  enabled: false
+times_square:
+  enabled: false
+vault_secrets_operator:
+  enabled: true
+vo_cutouts:
+  enabled: false
