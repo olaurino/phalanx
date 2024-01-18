@@ -27,6 +27,9 @@
     {{- if .Values.config.slackAlerts }}
     slackWebhookFile: "/etc/gafaelfawr/secrets/slack-webhook"
     {{- end }}
+    {{- if .Values.config.cadcBaseUuid }}
+    cadcBaseUuid: {{ .Values.config.cadcBaseUuid | quote }}
+    {{- end }}
 
     {{- if .Values.config.github.clientId }}
 
@@ -126,6 +129,7 @@
       {{- end }}
       groupObjectClass: {{ .Values.config.ldap.groupObjectClass | quote }}
       groupMemberAttr: {{ .Values.config.ldap.groupMemberAttr | quote }}
+      groupSearchByDn: {{ .Values.config.ldap.groupSearchByDn }}
       {{- if .Values.config.ldap.userBaseDn }}
       userBaseDn: {{ .Values.config.ldap.userBaseDn | quote }}
       userSearchAttr: {{ .Values.config.ldap.userSearchAttr | quote }}
@@ -194,6 +198,8 @@ data:
   gafaelfawr.yaml: |
     {{- if .Values.cloudsql.enabled }}
     databaseUrl: "postgresql://gafaelfawr@cloud-sql-proxy/gafaelfawr"
+    {{- else if .Values.config.internalDatabase }}
+    databaseUrl: "postgresql://gafaelfawr@postgres.postgres/gafaelfawr"
     {{- else }}
     databaseUrl: {{ required "config.databaseUrl must be set" .Values.config.databaseUrl | quote }}
     {{- end }}
@@ -209,6 +215,8 @@ data:
   gafaelfawr.yaml: |
     {{- if .Values.cloudsql.enabled }}
     databaseUrl: "postgresql://gafaelfawr@localhost/gafaelfawr"
+    {{- else if .Values.config.internalDatabase }}
+    databaseUrl: "postgresql://gafaelfawr@postgres.postgres/gafaelfawr"
     {{- else }}
     databaseUrl: {{ required "config.databaseUrl must be set" .Values.config.databaseUrl | quote }}
     {{- end }}

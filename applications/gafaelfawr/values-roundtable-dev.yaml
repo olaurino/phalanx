@@ -31,6 +31,9 @@ config:
       - github:
           organization: "lsst-sqre"
           team: "square"
+      - github:
+          organization: "lsst-sqre"
+          team: "Friends"
 
   initialAdmins:
     - "afausti"
@@ -47,3 +50,4 @@ ingress:
   additionalHosts:
     - "git-lfs-dev.lsst.cloud"
     - "git-lfs-dev-rw.lsst.cloud"
+    - "monitoring-dev.lsst.cloud"

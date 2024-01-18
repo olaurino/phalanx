@@ -1,6 +1,6 @@
 strimzi-kafka:
   mirrormaker2:
-    enabled: true
+    enabled: false
     source:
       bootstrapServer: sasquatch-summit-kafka-bootstrap.lsst.codes:9094
       topicsPattern: "lsst.sal.*, registry-schemas"
@@ -9,10 +9,10 @@ strimzi-kafka:
         separator: "."
         class: "org.apache.kafka.connect.mirror.DefaultReplicationPolicy"
     sourceRegistry:
-      enabled: true
+      enabled: false
       schemaTopic: source.registry-schemas
     sourceConnect:
-      enabled: true
+      enabled: false
     resources:
       requests:
         cpu: 2
@@ -23,6 +23,7 @@ strimzi-kafka:
   kafka:
     storage:
       storageClassName: rook-ceph-block
+      size: 1Ti
     externalListener:
       tls:
         enabled: true
@@ -42,6 +43,14 @@ strimzi-kafka:
   users:
     replicator:
       enabled: true
+    tsSalKafka:
+      enabled: true
+    kafdrop:
+      enabled: true
+    telegraf:
+      enabled: true
+    kafkaConnectManager:
+      enabled: true
 
 influxdb:
   persistence:
@@ -60,10 +69,10 @@ influxdb-staging:
     hostname: base-lsp.lsst.codes
 
 source-influxdb:
-  enabled: true
+  enabled: false
   persistence:
     storageClass: rook-ceph-block
-    size: 5Ti
+    size: 10Ti
   ingress:
     enabled: true
     hostname: base-lsp.lsst.codes
@@ -89,7 +98,7 @@ kafka-connect-manager:
         topicsRegex: "lsst.sal.CCCamera|lsst.sal.CCHeaderService|lsst.sal.CCOODS"
       eas:
         enabled: true
-        topicsRegex: "lsst.sal.DIMM|lsst.sal.DSM|lsst.sal.ESS|lsst.sal.WeatherForecast"
+        topicsRegex: "lsst.sal.DIMM|lsst.sal.DSM|lsst.sal.ESS|lsst.sal.HVAC|lsst.sal.WeatherForecast"
       latiss:
         enabled: true
         topicsRegex: "lsst.sal.ATCamera|lsst.sal.ATHeaderService|lsst.sal.ATOODS|lsst.sal.ATSpectrograph"
@@ -127,12 +136,199 @@ kafka-connect-manager:
       genericcamera:
         enabled: true
         topicsRegex: "lsst.sal.GCHeaderService|lsst.sal.GenericCamera"
+      lsstcam:
+        enabled: true
+        topicsRegex: "lsst.sal.MTCamera|lsst.sal.MTHeaderService|lsst.sal.MTOODS"
+
+telegraf-kafka-consumer:
+  enabled: false
+  kafkaConsumers:
+    auxtel:
+      enabled: true
+      replicaCount: 1
+      interval: "1s"
+      flush_interval: "1s"
+      union_mode: "nullable"
+      timestamp_format: "unix"
+      timestamp_field: "private_efdStamp"
+      topicRegexps: |
+        [ "lsst.sal.ATAOS", "lsst.sal.ATDome", "lsst.sal.ATDomeTrajectory", "lsst.sal.ATHexapod", "lsst.sal.ATPneumatics", "lsst.sal.ATPtg", "lsst.sal.ATMCS" ]
+    maintel:
+      enabled: true
+      replicaCount: 1
+      interval: "1s"
+      flush_interval: "1s"
+      union_mode: "nullable"
+      timestamp_format: "unix"
+      timestamp_field: "private_efdStamp"
+      topicRegexps: |
+        [ "lsst.sal.MTAOS", "lsst.sal.MTDome", "lsst.sal.MTDomeTrajectory", "lsst.sal.MTPtg" ]
+    mtmount:
+      enabled: true
+      replicaCount: 1
+      interval: "1s"
+      flush_interval: "1s"
+      union_mode: "nullable"
+      timestamp_format: "unix"
+      timestamp_field: "private_efdStamp"
+      topicRegexps: |
+        [ "lsst.sal.MTMount" ]
+    comcam:
+      enabled: true
+      replicaCount: 1
+      interval: "1s"
+      flush_interval: "1s"
+      union_mode: "nullable"
+      timestamp_format: "unix"
+      timestamp_field: "private_efdStamp"
+      topicRegexps: |
+        [ "lsst.sal.CCCamera", "lsst.sal.CCHeaderService", "lsst.sal.CCOODS" ]
+    eas:
+      enabled: true
+      replicaCount: 1
+      interval: "1s"
+      flush_interval: "1s"
+      union_mode: "nullable"
+      timestamp_format: "unix"
+      timestamp_field: "private_efdStamp"
+      topicRegexps: |
+        [ "lsst.sal.DIMM", "lsst.sal.DSM", "lsst.sal.ESS", "lsst.sal.HVAC", "lsst.sal.WeatherForecast" ]
+    latiss:
+      enabled: true
+      replicaCount: 1
+      interval: "1s"
+      flush_interval: "1s"
+      union_mode: "nullable"
+      timestamp_format: "unix"
+      timestamp_field: "private_efdStamp"
+      topicRegexps: |
+        [ "lsst.sal.ATCamera", "lsst.sal.ATHeaderService", "lsst.sal.ATOODS", "lsst.sal.ATSpectrograph" ]
+    m1m3:
+      enabled: true
+      replicaCount: 1
+      interval: "1s"
+      flush_interval: "1s"
+      union_mode: "nullable"
+      timestamp_format: "unix"
+      timestamp_field: "private_efdStamp"
+      topicRegexps: |
+        [ "lsst.sal.MTM1M3" ]
+    m2:
+      enabled: true
+      replicaCount: 1
+      interval: "1s"
+      flush_interval: "1s"
+      union_mode: "nullable"
+      timestamp_format: "unix"
+      timestamp_field: "private_efdStamp"
+      topicRegexps: |
+        [ "lsst.sal.MTHexapod", "lsst.sal.MTM2", "lsst.sal.MTRotator" ]
+    obssys:
+      enabled: true
+      replicaCount: 1
+      interval: "1s"
+      flush_interval: "1s"
+      union_mode: "nullable"
+      timestamp_format: "unix"
+      timestamp_field: "private_efdStamp"
+      topicRegexps: |
+        [ "lsst.sal.Scheduler", "lsst.sal.Script", "lsst.sal.ScriptQueue", "lsst.sal.Watcher" ]
+    ocps:
+      enabled: true
+      replicaCount: 1
+      interval: "1s"
+      flush_interval: "1s"
+      union_mode: "nullable"
+      timestamp_format: "unix"
+      timestamp_field: "private_efdStamp"
+      topicRegexps: |
+        [ "lsst.sal.OCPS" ]
+    test:
+      enabled: true
+      replicaCount: 1
+      interval: "1s"
+      flush_interval: "1s"
+      union_mode: "nullable"
+      timestamp_format: "unix"
+      timestamp_field: "private_efdStamp"
+      topicRegexps: |
+        [ "lsst.sal.Test" ]
+    pmd:
+      enabled: true
+      replicaCount: 1
+      interval: "1s"
+      flush_interval: "1s"
+      union_mode: "nullable"
+      timestamp_format: "unix"
+      timestamp_field: "private_efdStamp"
+      topicRegexps: |
+        [ "lsst.sal.PMD" ]
+    calsys:
+      enabled: true
+      replicaCount: 1
+      interval: "1s"
+      flush_interval: "1s"
+      union_mode: "nullable"
+      timestamp_format: "unix"
+      timestamp_field: "private_efdStamp"
+      topicRegexps: |
+        [ "lsst.sal.ATMonochromator", "lsst.sal.ATWhiteLight", "lsst.sal.CBP", "lsst.sal.Electrometer", "lsst.sal.FiberSpectrograph", "lsst.sal.LinearStage", "lsst.sal.TunableLaser" ]
+    mtaircompressor:
+      enabled: true
+      replicaCount: 1
+      interval: "1s"
+      flush_interval: "1s"
+      union_mode: "nullable"
+      timestamp_format: "unix"
+      timestamp_field: "private_efdStamp"
+      topicRegexps: |
+        [ "lsst.sal.MTAirCompressor" ]
+    authorize:
+      enabled: true
+      replicaCount: 1
+      interval: "1s"
+      flush_interval: "1s"
+      union_mode: "nullable"
+      timestamp_format: "unix"
+      timestamp_field: "private_efdStamp"
+      topicRegexps: |
+        [ "lsst.sal.Authorize" ]
+    lasertracker:
+      enabled: true
+      replicaCount: 1
+      interval: "1s"
+      flush_interval: "1s"
+      union_mode: "nullable"
+      timestamp_format: "unix"
+      timestamp_field: "private_efdStamp"
+      topicRegexps: |
+        [ "lsst.sal.LaserTracker" ]
+    genericcamera:
+      enabled: true
+      replicaCount: 1
+      interval: "1s"
+      flush_interval: "1s"
+      union_mode: "nullable"
+      timestamp_format: "unix"
+      timestamp_field: "private_efdStamp"
+      topicRegexps: |
+        [ "lsst.sal.GCHeaderService", "lsst.sal.GenericCamera" ]
+    lsstcam:
+      enabled: true
+      replicaCount: 1
+      interval: "1s"
+      flush_interval: "1s"
+      union_mode: "nullable"
+      timestamp_format: "unix"
+      timestamp_field: "private_efdStamp"
+      topicRegexps: |
+        [ "lsst.sal.MTCamera", "lsst.sal.MTHeaderService", "lsst.sal.MTOODS" ]
 
 # This needs to follow the kafka-connect-manager configuration for the summit
 # environment where data is replicated from.
 # We need to remove the "source." prefix from the topic name before writing to InfluxDB.
 source-kafka-connect-manager:
-  enabled: true
+  enabled: false
   influxdbSink:
     connectInfluxUrl: "http://sasquatch-influxdb-staging.sasquatch:8086"
     connectInfluxDb: "efd"
@@ -155,7 +351,7 @@ source-kafka-connect-manager:
         removePrefix: "source."
       source-eas:
         enabled: true
-        topicsRegex: "source.lsst.sal.DIMM|source.lsst.sal.DSM|source.lsst.sal.ESS|source.lsst.sal.WeatherForecast"
+        topicsRegex: "source.lsst.sal.DIMM|source.lsst.sal.DSM|source.lsst.sal.ESS|source.lsst.sal.HVAC|source.lsst.sal.WeatherForecast"
         removePrefix: "source."
       source-latiss:
         enabled: true
@@ -248,6 +444,11 @@ chronograf:
     GENERIC_API_KEY: sub
     PUBLIC_URL: https://base-lsp.lsst.codes
     STATUS_FEED_URL: https://raw.githubusercontent.com/lsst-sqre/rsp_broadcast/main/jsonfeeds/base.json
+
+source-kapacitor:
+  enabled: false
+  persistence:
+    storageClass: rook-ceph-block
 
 kapacitor:
   persistence:

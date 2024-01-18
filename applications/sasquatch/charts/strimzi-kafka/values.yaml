@@ -5,7 +5,7 @@ cluster:
 
 kafka:
   # -- Version of Kafka to deploy.
-  version: "3.4.0"
+  version: "3.5.1"
   # -- Number of Kafka broker replicas to run.
   replicas: 3
   storage:
@@ -15,11 +15,11 @@ kafka:
     storageClassName: ""
   config:
     # -- Number of minutes for a consumer group's offsets to be retained.
-    offsets.retention.minutes: 4320
+    offsets.retention.minutes: 2880
     # -- Number of days for a topic's data to be retained.
-    log.retention.hours: 72
-    # -- Maximum retained number of bytes for a topic's data.
-    log.retention.bytes: "429496729600"
+    log.retention.hours: 48
+    # -- How much disk space Kafka will ensure is available, set to 70% of the data partition size
+    log.retention.bytes: "350000000000"
     # -- The largest record batch size allowed by Kafka.
     message.max.bytes: 10485760
     # -- The number of bytes of messages to attempt to fetch for each partition.
@@ -30,15 +30,15 @@ kafka:
   listeners:
     plain:
       # -- Whether internal plaintext listener is enabled.
-      enabled: true
+      enabled: false
 
     tls:
       # -- Whether internal TLS listener is enabled.
-      enabled: true
+      enabled: false
 
     external:
       # -- Whether external listener is enabled.
-      enabled: true
+      enabled: false
 
   externalListener:
     tls:
@@ -74,8 +74,17 @@ kafka:
     #     annotations:
     #       metallb.universe.tf/address-pool: sdf-dmz
 
-  # -- Node affinity for Kafka broker pod assignment.
-  affinity: {}
+  # -- Affinity for Kafka pod assignment.
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: "app.kubernetes.io/name"
+            operator: In
+            values:
+            - kafka
+        topologyKey: "kubernetes.io/hostname"
 
   # -- Tolerations for Kafka broker pod assignment.
   tolerations: []
@@ -89,53 +98,69 @@ zookeeper:
     # -- Name of a StorageClass to use when requesting persistent volumes.
     storageClassName: ""
 
-  # -- Node affinity for Zookeeper pod assignment.
-  affinity: {}
+  # -- Affinity for Zookeeper pod assignment.
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: "app.kubernetes.io/name"
+            operator: In
+            values:
+            - zookeeper
+        topologyKey: "kubernetes.io/hostname"
 
   # -- Tolerations for Zookeeper pod assignment.
   tolerations: []
 
 connect:
   # -- Enable Kafka Connect.
-  enabled: true
+  enabled: false
   # -- Custom strimzi-kafka image with connector plugins used by sasquatch.
-  image: ghcr.io/lsst-sqre/strimzi-0.35.1-kafka-3.4.0:1.2.0
+  image: ghcr.io/lsst-sqre/strimzi-0.36.1-kafka-3.5.1:tickets-dm-40655
   # -- Number of Kafka Connect replicas to run.
   replicas: 3
 
 registry:
+  ingress:
+    # -- Whether to enable ingress for the Schema Registry.
+    enabled: false
+    # -- Hostname for the Schema Registry.
+    hostname: ""
+    # -- Annotations that will be added to the Ingress resource.
+    annotations: {}
   # -- Name of the topic used by the Schema Registry
   schemaTopic: registry-schemas
 
 # -- A list of usernames for users who should have global admin permissions.
 # These users will be created, along with their credentials.
 superusers:
-  - kafka-admin
+- kafka-admin
 
 users:
   replicator:
-    # -- Enabled user replicator (used by Mirror Maker 2 and required at both source and target clusters)
+    # -- Enable user replicator (used by Mirror Maker 2 and required at both source and target clusters)
     enabled: false
 
   tsSalKafka:
-    # -- Enable user ts-salkafka.
-    enabled: true
+    # -- Enable user ts-salkafka, used at the telescope environments
+    enabled: false
 
   kafdrop:
     # -- Enable user Kafdrop (deployed by parent Sasquatch chart).
-    enabled: true
+    enabled: false
 
   telegraf:
     # -- Enable user telegraf (deployed by parent Sasquatch chart)
-    enabled: true
+    enabled: false
 
   promptProcessing:
     # -- Enable user prompt-processing
-    enabled: true
+    enabled: false
 
   kafkaConnectManager:
     # -- Enable user kafka-connect-manager
-    enabled: true
+    enabled: false
 
 mirrormaker2:
   # -- Enable replication in the target (passive) cluster.
